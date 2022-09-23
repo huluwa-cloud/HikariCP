@@ -45,6 +45,13 @@ import static com.zaxxer.hikari.util.UtilityElf.safeIsAssignableFrom;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+/**
+ *
+ *
+ * Hikari数据库连接池，！！！所有的！！！配置都在这个类里面了
+ *
+ *
+ */
 @SuppressWarnings({"SameParameterValue"})
 public class HikariConfig implements HikariConfigMXBean
 {
@@ -61,6 +68,7 @@ public class HikariConfig implements HikariConfigMXBean
 
    private static boolean unitTest = false;
 
+   // 这些是运行时可以被修改的配置属性
    // Properties changeable at runtime through the HikariConfigMXBean
    //
    private volatile String catalog;
@@ -74,8 +82,12 @@ public class HikariConfig implements HikariConfigMXBean
    private volatile String username;
    private volatile String password;
 
+   // 下面这些是运行时“不可以”被修改的配置属性
    // Properties NOT changeable at runtime
    //
+   /**
+    * Hikari连接池初始化超时时间
+    */
    private long initializationFailTimeout;
    private String connectionInitSql;
    private String connectionTestQuery;
@@ -978,6 +990,7 @@ public class HikariConfig implements HikariConfigMXBean
 
       return null;
    }
+
 
    @SuppressWarnings("StatementWithEmptyBody")
    public void validate()
