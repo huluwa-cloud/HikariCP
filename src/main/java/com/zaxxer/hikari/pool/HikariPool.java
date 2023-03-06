@@ -72,6 +72,9 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
 {
    private final Logger logger = LoggerFactory.getLogger(HikariPool.class);
 
+   /**
+    * 一般具有业务系统里面的对象都是有生命周期的。那么就会有状态机的概念。
+    */
    public static final int POOL_NORMAL = 0;
    public static final int POOL_SUSPENDED = 1;
    public static final int POOL_SHUTDOWN = 2;
@@ -90,6 +93,11 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
    private final ThreadPoolExecutor addConnectionExecutor;
    private final ThreadPoolExecutor closeConnectionExecutor;
 
+   /**
+    *
+    * ConcurrentBag是Hikari库自己写的一个并发容器。将容器的元素做成了泛型
+    *
+    */
    private final ConcurrentBag<PoolEntry> connectionBag;
 
    private final ProxyLeakTaskFactory leakTaskFactory;
@@ -99,13 +107,20 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
    private ScheduledFuture<?> houseKeeperTask;
 
    /**
+    *
+    * Hikari就只有这一个构造方法！
+    *
     * Construct a HikariPool with the specified configuration.
     *
     * @param config a HikariConfig instance
     */
    public HikariPool(final HikariConfig config)
    {
+
       super(config);
+      // 分割线上面的都是做一些创建数据源的事情了
+      // ===================================================
+      // 下面做的事情，就是做一些跟数据库连接池化相关的事情了
 
       this.connectionBag = new ConcurrentBag<>(this);
       this.suspendResumeLock = config.isAllowPoolSuspension() ? new SuspendResumeLock() : SuspendResumeLock.FAUX_LOCK;
@@ -166,8 +181,13 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
     * Get a connection from the pool, or timeout after the specified number of milliseconds.
     *
     * @param hardTimeout the maximum time to wait for a connection from the pool
+    *                    等待获取数据库连接的时间
+    *
     * @return a java.sql.Connection instance
+    *         返回一个数据库连接
+    *
     * @throws SQLException thrown if a timeout occurs trying to obtain a connection
+    *        如果获取数据库连接超时，抛出SQLException
     */
    public Connection getConnection(final long hardTimeout) throws SQLException
    {
@@ -177,6 +197,7 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
       try {
          long timeout = hardTimeout;
          do {
+            // borrow ==> 借
             PoolEntry poolEntry = connectionBag.borrow(timeout, MILLISECONDS);
             if (poolEntry == null) {
                break; // We timed out... break and throw exception
@@ -189,9 +210,15 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
             }
             else {
                metricsTracker.recordBorrowStats(poolEntry, startTime);
+               /*
+                * 和MyBatis的PooledConnection一样，也是对Connection做了代理。
+                */
                return poolEntry.createProxyConnection(leakTaskFactory.schedule(poolEntry), now);
             }
-         } while (timeout > 0L);
+         }
+         // 如果timeout小于等于0，那就是获取数据库连接超时了。
+         // 那么就应该跳出循环，到下面去Timeout异常了。
+         while (timeout > 0L);
 
          metricsTracker.recordBorrowTimeoutStats(startTime);
          throw createTimeoutException(startTime);
@@ -545,6 +572,9 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
 
    /**
     * If initializationFailFast is configured, check that we have DB connectivity.
+    *
+    * initializationFailFast这个配置已经被3.0.0版本干掉了。
+    * 改成了直接判断initializationTimeout是否大于等于0；
     *
     * @throws PoolInitializationException if fails to create or validate connection
     * @see HikariConfig#setInitializationFailTimeout(long)

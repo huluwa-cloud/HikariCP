@@ -44,6 +44,13 @@ public class SuspendResumeLock
    };
 
    private static final int MAX_PERMITS = 10000;
+
+   /**
+    *
+    * 这里用了信号量Semaphore
+    *
+    *
+    */
    private final Semaphore acquisitionSemaphore;
 
    /**

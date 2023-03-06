@@ -29,7 +29,11 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import static com.zaxxer.hikari.util.ClockSource.*;
 
 /**
+ *
  * Entry used in the ConcurrentBag to track Connection instances.
+ * 用来track数据库连接实例的Entry
+ *
+ *
  *
  * @author Brett Wooldridge
  */

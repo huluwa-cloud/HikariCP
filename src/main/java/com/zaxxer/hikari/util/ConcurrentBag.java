@@ -37,9 +37,18 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 /**
+ *
+ *
+ * 注意：这是Hikari写的一个通用的数据结构，它不与其它具有业务意义的代码耦合。
+ *
+ *
  * This is a specialized concurrent bag that achieves superior performance
  * to LinkedBlockingQueue and LinkedTransferQueue for the purposes of a
- * connection pool.  It uses ThreadLocal storage when possible to avoid
+ * connection pool.
+ * 这句话，值得好好品味
+ *
+ *
+ * It uses ThreadLocal storage when possible to avoid
  * locks, but resorts to scanning a common collection if there are no
  * available items in the ThreadLocal list.  Not-in-use items in the
  * ThreadLocal lists can be "stolen" when the borrowing thread has none

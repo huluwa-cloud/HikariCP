@@ -24,11 +24,14 @@ import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
+ * 全是静态方法，典型的工具类
  *
  * @author Brett Wooldridge
  */
+// 工具类一般都有final修饰类
 public final class UtilityElf
 {
+   // 一般工具类都会私有化构造器，不让创建对象实例
    private UtilityElf()
    {
       // non-constructable

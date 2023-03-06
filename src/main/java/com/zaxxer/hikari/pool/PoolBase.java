@@ -111,6 +111,8 @@ abstract class PoolBase
       this.validationTimeout = config.getValidationTimeout();
       this.lastConnectionFailure = new AtomicReference<>();
 
+      // 上面首先把配置设置上
+      // 然后下面初始化数据源
       initializeDataSource();
    }
 
@@ -310,6 +312,9 @@ abstract class PoolBase
    // ***********************************************************************
 
    /**
+    *
+    * 创建数据源
+    *
     * Create/initialize the underlying DataSource.
     */
    private void initializeDataSource()
@@ -323,13 +328,16 @@ abstract class PoolBase
       final Properties dataSourceProperties = config.getDataSourceProperties();
 
       DataSource ds = config.getDataSource();
+      // 如果配置了DataSourceClassName，就用DataSource来创建数据源
       if (dsClassName != null && ds == null) {
          ds = createInstance(dsClassName, DataSource.class);
          PropertyElf.setTargetFromProperties(ds, dataSourceProperties);
       }
+      // 如果没有配置DataSource，配置的是jdbcUrl，那么就用driverClassName来创建数据源
       else if (jdbcUrl != null && ds == null) {
          ds = new DriverDataSource(jdbcUrl, driverClassName, dataSourceProperties, username, password);
       }
+      // 如果配置的是JNDI，那么就用JNDI来配置创建数据源
       else if (dataSourceJNDI != null && ds == null) {
          try {
             InitialContext ic = new InitialContext();
